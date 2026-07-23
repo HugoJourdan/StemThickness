@@ -253,11 +253,17 @@ static NSColor *pointColor = nil;
 // -drawBadgeAtPoint:… renders a washed-out light badge with dark text instead of the G3
 // look, so we render the pill ourselves to stay identical across both hosts.
 - (void)drawBadge:(NSString *)text center:(NSPoint)center fontSize:(CGFloat)fontSize color:(NSColor *)color {
-	// Smaller and more muted than the G3 badge: shrink the text and render the pill
-	// semi-transparent so the number reads without dominating the outline.
-	fontSize *= 0.8;
+	// Muted pill (semi-transparent) with larger monospaced text so the number
+	// reads clearly without dominating the outline.
+	fontSize *= 1.15;
+	NSFont *monoFont;
+	if (@available(macOS 10.15, *)) {
+		monoFont = [NSFont monospacedSystemFontOfSize:fontSize weight:NSFontWeightRegular];
+	} else {
+		monoFont = [NSFont userFixedPitchFontOfSize:fontSize];  // Menlo/Monaco fallback
+	}
 	NSDictionary *attrs = @{
-		NSFontAttributeName: [NSFont systemFontOfSize:fontSize weight:NSFontWeightRegular],
+		NSFontAttributeName: monoFont,
 		NSForegroundColorAttributeName: [NSColor.blackColor colorWithAlphaComponent:0.9],
 	};
 	NSSize textSize = [text sizeWithAttributes:attrs];
