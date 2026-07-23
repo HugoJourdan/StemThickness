@@ -258,7 +258,7 @@ static NSColor *pointColor = nil;
 	fontSize *= 0.8;
 	NSDictionary *attrs = @{
 		NSFontAttributeName: [NSFont systemFontOfSize:fontSize weight:NSFontWeightRegular],
-		NSForegroundColorAttributeName: [NSColor.whiteColor colorWithAlphaComponent:0.9],
+		NSForegroundColorAttributeName: [NSColor.blackColor colorWithAlphaComponent:0.9],
 	};
 	NSSize textSize = [text sizeWithAttributes:attrs];
 	CGFloat padX = fontSize * 0.45;
