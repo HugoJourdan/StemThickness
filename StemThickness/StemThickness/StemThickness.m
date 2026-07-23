@@ -255,7 +255,7 @@ static NSColor *pointColor = nil;
 - (void)drawBadge:(NSString *)text center:(NSPoint)center fontSize:(CGFloat)fontSize color:(NSColor *)color {
 	// Muted pill (semi-transparent) with larger monospaced text so the number
 	// reads clearly without dominating the outline.
-	fontSize *= 1.15;
+	fontSize *= 1.05;
 	NSFont *monoFont;
 	if (@available(macOS 10.15, *)) {
 		monoFont = [NSFont monospacedSystemFontOfSize:fontSize weight:NSFontWeightRegular];
