@@ -253,19 +253,22 @@ static NSColor *pointColor = nil;
 // -drawBadgeAtPoint:… renders a washed-out light badge with dark text instead of the G3
 // look, so we render the pill ourselves to stay identical across both hosts.
 - (void)drawBadge:(NSString *)text center:(NSPoint)center fontSize:(CGFloat)fontSize color:(NSColor *)color {
+	// Smaller and more muted than the G3 badge: shrink the text and render the pill
+	// semi-transparent so the number reads without dominating the outline.
+	fontSize *= 0.8;
 	NSDictionary *attrs = @{
-		NSFontAttributeName: [NSFont systemFontOfSize:fontSize weight:NSFontWeightMedium],
-		NSForegroundColorAttributeName: NSColor.whiteColor,
+		NSFontAttributeName: [NSFont systemFontOfSize:fontSize weight:NSFontWeightRegular],
+		NSForegroundColorAttributeName: [NSColor.whiteColor colorWithAlphaComponent:0.9],
 	};
 	NSSize textSize = [text sizeWithAttributes:attrs];
-	CGFloat padX = fontSize * 0.55;
-	CGFloat padY = fontSize * 0.22;
+	CGFloat padX = fontSize * 0.45;
+	CGFloat padY = fontSize * 0.18;
 	NSRect box = NSMakeRect(center.x - textSize.width * 0.5 - padX,
 							center.y - textSize.height * 0.5 - padY,
 							textSize.width + padX * 2,
 							textSize.height + padY * 2);
 	CGFloat radius = NSHeight(box) * 0.4;
-	[color set];
+	[[color colorWithAlphaComponent:0.5] set];
 	[[NSBezierPath bezierPathWithRoundedRect:box xRadius:radius yRadius:radius] fill];
 	[text drawAtPoint:NSMakePoint(center.x - textSize.width * 0.5, center.y - textSize.height * 0.5) withAttributes:attrs];
 }
