@@ -253,8 +253,7 @@ static NSColor *pointColor = nil;
 // -drawBadgeAtPoint:… renders a washed-out light badge with dark text instead of the G3
 // look, so we render the pill ourselves to stay identical across both hosts.
 - (void)drawBadge:(NSString *)text center:(NSPoint)center fontSize:(CGFloat)fontSize color:(NSColor *)color {
-	// Solid accent pill with larger monospaced black text.
-	fontSize *= 1.05;
+	// Pale accent pill (light tint) with monospaced black text.
 	NSFont *monoFont;
 	if (@available(macOS 10.15, *)) {
 		monoFont = [NSFont monospacedSystemFontOfSize:fontSize weight:NSFontWeightRegular];
@@ -273,7 +272,7 @@ static NSColor *pointColor = nil;
 							textSize.width + padX * 2,
 							textSize.height + padY * 2);
 	CGFloat radius = NSHeight(box) * 0.4;
-	[color set];
+	[[color blendedColorWithFraction:0.8 ofColor:NSColor.whiteColor] set];
 	[[NSBezierPath bezierPathWithRoundedRect:box xRadius:radius yRadius:radius] fill];
 	[text drawAtPoint:NSMakePoint(center.x - textSize.width * 0.5, center.y - textSize.height * 0.5) withAttributes:attrs];
 }
