@@ -18,7 +18,6 @@
 #import <GlyphsCore/GSComponent.h>
 #import <GlyphsCore/GSProxyShapes.h>
 #import <GlyphsCore/GSCallbackHandler.h>
-#import <GlyphsCore/NSString+BadgeDrawing.h>
 
 NSPoint GSMiddlePointStem(NSPoint A, NSPoint B) {
 	A.x = (A.x + B.x) * 0.5;
@@ -174,7 +173,7 @@ static NSColor *pointColor = nil;
 - (void)drawDashedStrokeA:(NSPoint)A b:(NSPoint)B {
 	NSBezierPath *bez = [NSBezierPath bezierPath];
 	bez.lineWidth = 0;
-	CGFloat dash[] = {2.0, 2.0};
+	CGFloat dash[] = {5.0, 3.0};
 	[bez setLineDash:dash count:2 phase:0];
 	[bez moveToPoint:A];
 	[bez lineToPoint:B];
@@ -249,6 +248,28 @@ static NSColor *pointColor = nil;
 	}
 }
 
+// Draws the measurement pill: a saturated accent-colored rounded rect with white text,
+// self-drawn with plain AppKit. Glyphs 4 dropped NSString+BadgeDrawing.h and its runtime
+// -drawBadgeAtPoint:… renders a washed-out light badge with dark text instead of the G3
+// look, so we render the pill ourselves to stay identical across both hosts.
+- (void)drawBadge:(NSString *)text center:(NSPoint)center fontSize:(CGFloat)fontSize color:(NSColor *)color {
+	NSDictionary *attrs = @{
+		NSFontAttributeName: [NSFont systemFontOfSize:fontSize weight:NSFontWeightMedium],
+		NSForegroundColorAttributeName: NSColor.whiteColor,
+	};
+	NSSize textSize = [text sizeWithAttributes:attrs];
+	CGFloat padX = fontSize * 0.55;
+	CGFloat padY = fontSize * 0.22;
+	NSRect box = NSMakeRect(center.x - textSize.width * 0.5 - padX,
+							center.y - textSize.height * 0.5 - padY,
+							textSize.width + padX * 2,
+							textSize.height + padY * 2);
+	CGFloat radius = NSHeight(box) * 0.4;
+	[color set];
+	[[NSBezierPath bezierPathWithRoundedRect:box xRadius:radius yRadius:radius] fill];
+	[text drawAtPoint:NSMakePoint(center.x - textSize.width * 0.5, center.y - textSize.height * 0.5) withAttributes:attrs];
+}
+
 - (void)showDistance:(CGFloat)d cross:(NSPoint)cross onCurve:(NSPoint)onCurve color:(NSColor *)color {
 	// self.lastNodePair = (cross, onCurve) //TODO
 
@@ -259,7 +280,7 @@ static NSColor *pointColor = nil;
 	[color set];
 	[self drawDashedStrokeA:onCurve b:cross];
 	CGFloat fontSize = handleSize * 1.5 * pow(_scale, 0.1);
-	[distanceShowed drawBadgeAtPoint:thisDistanceCenter size:fontSize color:NSColor.textColor backgroundColor:[color blendedColorWithFraction:0.8 ofColor:NSColor.textBackgroundColor] alignment:GSCenterCenter visibleInRect:NSMakeRect(NSNotFound, 0, 0, 0)];
+	[self drawBadge:distanceShowed center:thisDistanceCenter fontSize:fontSize color:color];
 	[self drawPoint:cross size:zoomedHandleSize color:color];
 }
 
