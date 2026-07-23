@@ -6,6 +6,8 @@ Show Thickness Plugin for for [Glyphs App](http://glyphsapp.com/). The tool show
 
 Right-click to open the context menu and choose *Add Guide for Measurement* to turn the current measurement into a static guide in measurement mode.
 
+> **Glyphs 4 compatible.** This fork updates the plugin to run in both Glyphs 3 and Glyphs 4. Glyphs 4 changed `-[GSLayer calculateIntersections…]` to return a private `FTPointArray` instead of an `NSArray`, which silently broke the crossing lookup; the return value is now normalized so the same binary works on both versions. The bundle is built against the Glyphs 3 SDK and loads unchanged in Glyphs 4.
+
 ### Installation and Usage
 
 1. In *Window > Plugin Manager,* look for *Show Stem Thickness* and press the *Install* button next to it.

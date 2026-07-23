@@ -26,6 +26,34 @@ NSPoint GSMiddlePointStem(NSPoint A, NSPoint B) {
 	return A;
 }
 
+/*
+ Glyphs 4 changed -[GSLayer calculateIntersections…] to return a private FTPointArray
+ instead of an NSArray<NSValue*>. FTPointArray responds to -count / -pointAtIndex: but is
+ NOT NSFastEnumeration and its elements are raw NSPoints, not NSValues — so the old
+ `for (NSValue *v in crossPoints)` / `crossPoints[i]` iteration silently broke under G4.
+ Normalize whatever the running Glyphs returns to a plain NSArray<NSValue*>.
+ */
+@protocol GSPointArrayCompat <NSObject>
+- (NSUInteger)count;
+- (NSPoint)pointAtIndex:(NSUInteger)index;
+@end
+
+static NSArray<NSValue *> *normalizeIntersections(id result) {
+	if (!result || [result isKindOfClass:[NSArray class]]) {
+		return result ?: @[];  // Glyphs 3: already NSArray<NSValue*>.
+	}
+	if ([result respondsToSelector:@selector(pointAtIndex:)]) {  // Glyphs 4: FTPointArray.
+		id <GSPointArrayCompat> points = result;
+		NSUInteger count = [points count];
+		NSMutableArray<NSValue *> *values = [NSMutableArray arrayWithCapacity:count];
+		for (NSUInteger i = 0; i < count; i++) {
+			[values addObject:@([points pointAtIndex:i])];
+		}
+		return values;
+	}
+	return @[];  // Unknown container shape: fail safe rather than crash the host.
+}
+
 NSString *formatDistance(CGFloat d, CGFloat scale) {
 	// calculates how value of thickness will be shown
 	if (scale < 2) {
@@ -162,8 +190,10 @@ static NSColor *pointColor = nil;
 	NSPoint closestPoint = [closestData[@"onCurve"] pointValue];
 
 
-	// returns list of intersections
-	NSArray *crossPoints = [layer calculateIntersectionsStartPoint:[closestData[@"normal"] pointValue] endPoint:[closestData[@"minusNormal"] pointValue] decompose:NO];
+	// returns list of intersections. The bare `…decompose:` selector was dropped from the
+	// Glyphs headers; use the explicit 5-arg variant (present in G3 + G4) and normalize the
+	// return value, which is NSArray<NSValue*> in G3 but FTPointArray in G4.
+	NSArray<NSValue *> *crossPoints = normalizeIntersections([layer calculateIntersectionsStartPoint:[closestData[@"normal"] pointValue] endPoint:[closestData[@"minusNormal"] pointValue] decompose:NO ignoreLocked:NO clipToBound:NO]);
 
 	if (crossPoints.count > 2) {
 		// find closest point in the list of intersections
